@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Speech.Synthesis;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,25 +16,8 @@ namespace Packet.PacketConsole
 {
 	class Program
 	{
-		static void Main(string[] args)
+        static void Main(string[] args)
 		{
-            var knownWorkingAudio = GetWorkingAudio();
-
-            Dictionary<uint, byte[]> newAudioBytes = new Dictionary<uint, byte[]>();
-
-            uint newTimestamp = 1908944;
-
-            foreach (var kwa in knownWorkingAudio)
-            {
-                newAudioBytes.Add(newTimestamp, kwa.Value);
-                newTimestamp += 160;
-            }
-
-            PTTSender pttSender1 = new PTTSender();
-            pttSender1.Send(26, "Joe", newAudioBytes, Model.TimestampType.Try2);
-
-            return;
-
             Dictionary<uint, byte[]> audioBytes = new Dictionary<uint, byte[]>();
 
             uint timestamp = 1908944;
@@ -83,30 +67,7 @@ namespace Packet.PacketConsole
             PTTSender pttSender = new PTTSender();
             pttSender.Send(26, "Joe", audioBytes, timestampType);
 
-            //var pcmFormat = new WaveFormat(8000, 16, 1);
-            //var ulawFormat = WaveFormat.CreateMuLawFormat(8000, 1);
 
-            //Dictionary<uint, byte[]> audioBytes = new Dictionary<uint, byte[]>();
-            //uint index = 1;
-
-            //using (WaveFormatConversionStream pcmStm = new WaveFormatConversionStream(pcmFormat, new WaveFileReader(@"D:\Development\Packet\Packet.PacketConsole\pcm1608m.wav")))
-            //{
-            //    using (WaveFormatConversionStream ulawStm = new WaveFormatConversionStream(ulawFormat, pcmStm))
-            //    {
-            //        byte[] buffer = new byte[160];
-            //        int bytesRead = ulawStm.Read(buffer, 0, 160);
-
-            //        while (bytesRead > 0)
-            //        {
-            //            byte[] sample = new byte[bytesRead];
-            //            Array.Copy(buffer, sample, bytesRead);
-            //            audioBytes.Add(index, sample);
-            //            index += 1;
-
-            //            bytesRead = ulawStm.Read(buffer, 0, 160);
-            //        }
-            //    }
-            //}
 		}
 
         public static string AssemblyDirectory
