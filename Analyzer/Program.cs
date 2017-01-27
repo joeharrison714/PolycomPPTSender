@@ -7,6 +7,8 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,7 +28,7 @@ namespace Analyzer
 
         static void Main(string[] args)
         {
-            sw = new StreamWriter(@"D:\Development\Packet\Sample\parsed" + DateTime.Now.ToFileTime() + ".csv", false);
+            sw = new StreamWriter(AssemblyDirectory + @"\..\..\..\Sample\parsed" + DateTime.Now.ToFileTime() + ".csv", false);
             allAudioData = new Dictionary<uint, byte[]>();
             audioPackets = new List<PolycomPTTPacket>();
 
@@ -53,7 +55,7 @@ namespace Analyzer
             sw.Write("AudioData");
             sw.WriteLine();
 
-            CaptureFileReaderDevice device = new CaptureFileReaderDevice(@"D:\Development\Packet\Sample\joe-fromcomputer2.pcap");
+            CaptureFileReaderDevice device = new CaptureFileReaderDevice(AssemblyDirectory + @"\..\..\..\Sample\sample2.pcap");
 
             // Register our handler function to the 'packet arrival' event
             device.OnPacketArrival += Device_OnPacketArrival;
@@ -67,6 +69,21 @@ namespace Analyzer
             sw.Flush();
             sw.Close();
             sw.Dispose();
+
+            string filename = AssemblyDirectory + @"\..\..\..\Sample\testing123.bin";
+            using (FileStream stream = File.Create(filename))
+            {
+                var formatter = new BinaryFormatter();
+                formatter.Serialize(stream, allAudioData);
+                stream.Close();
+            }
+
+            using (FileStream stream = File.OpenRead(filename))
+            {
+                var formatter = new BinaryFormatter();
+                var v = (Dictionary<uint,byte[]>)formatter.Deserialize(stream);
+                stream.Close();
+            }
 
             //Console.WriteLine(allAudioData);
 
@@ -169,7 +186,7 @@ namespace Analyzer
 
             
 
-            byte[] newPacket = packet.ToPacket();
+            byte[] newPacket = packet.ToPacket(TimestampType.Try1);
 
             //oldPacket = oldPacket.Take(newPacket.Length).ToArray();
 
@@ -189,6 +206,17 @@ namespace Analyzer
             }
 
                 packetIndex++;
+        }
+
+        public static string AssemblyDirectory
+        {
+            get
+            {
+                string codeBase = Assembly.GetExecutingAssembly().CodeBase;
+                UriBuilder uri = new UriBuilder(codeBase);
+                string path = Uri.UnescapeDataString(uri.Path);
+                return Path.GetDirectoryName(path);
+            }
         }
     }
 }

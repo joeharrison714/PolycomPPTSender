@@ -43,12 +43,12 @@ namespace Packet.Model
 
         public string AudioDataString { get; set; }
 
-        public byte[] ToPacket()
+        public byte[] ToPacket(TimestampType tt)
         {
-            return ToPacket(this);
+            return ToPacket(this, tt);
         }
 
-        public static byte[] ToPacket(PolycomPTTPacket packet)
+        public static byte[] ToPacket(PolycomPTTPacket packet, TimestampType tt)
         {
             List<byte> alertPacket = new List<byte>();
 
@@ -122,12 +122,18 @@ namespace Packet.Model
                 // RTP info
                 byte[] sampleBytes = BitConverter.GetBytes(packet.SampleCount);
                 Array.Reverse(sampleBytes);
-                //alertPacket.AddRange(sampleBytes);
 
-                alertPacket.Add(sampleBytes[1]);
-                alertPacket.Add(sampleBytes[2]);
-                alertPacket.Add(sampleBytes[3]);
-                alertPacket.Add(0);
+                if (tt == TimestampType.Try1)
+                {
+                    alertPacket.AddRange(sampleBytes);
+                }
+                else if (tt == TimestampType.Try2)
+                {
+                    alertPacket.Add(sampleBytes[1]);
+                    alertPacket.Add(sampleBytes[2]);
+                    alertPacket.Add(sampleBytes[3]);
+                    alertPacket.Add(0);
+                }
 
                 //redundant audio
                 if (packet.PreviousAudioData != null)
@@ -270,5 +276,11 @@ namespace Packet.Model
         G711U,
         G722,
         G726QI
+    }
+
+    public enum TimestampType
+    {
+        Try1,
+        Try2
     }
 }

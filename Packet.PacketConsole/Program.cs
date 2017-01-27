@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,12 +17,27 @@ namespace Packet.PacketConsole
 	{
 		static void Main(string[] args)
 		{
-            //PTTSender sender = new PTTSender();
-            //sender.Send();
+            var knownWorkingAudio = GetWorkingAudio();
+
+            Dictionary<uint, byte[]> newAudioBytes = new Dictionary<uint, byte[]>();
+
+            uint newTimestamp = 1908944;
+
+            foreach (var kwa in knownWorkingAudio)
+            {
+                newAudioBytes.Add(newTimestamp, kwa.Value);
+                newTimestamp += 160;
+            }
+
+            PTTSender pttSender1 = new PTTSender();
+            pttSender1.Send(26, "Joe", newAudioBytes, Model.TimestampType.Try2);
+
+            return;
 
             Dictionary<uint, byte[]> audioBytes = new Dictionary<uint, byte[]>();
 
             uint timestamp = 1908944;
+            Model.TimestampType timestampType = Model.TimestampType.Try2;
 
             //string filename = Path.Combine(AssemblyDirectory + @"\..\..\..\TestAudio", "VirusAlert.wav");
             //string filename = Path.Combine(AssemblyDirectory + @"\..\..\..\TestAudio", "clockchime.ulaw.wav");
@@ -65,7 +81,7 @@ namespace Packet.PacketConsole
             }
 
             PTTSender pttSender = new PTTSender();
-            pttSender.Send(26, "Joe", audioBytes);
+            pttSender.Send(26, "Joe", audioBytes, timestampType);
 
             //var pcmFormat = new WaveFormat(8000, 16, 1);
             //var ulawFormat = WaveFormat.CreateMuLawFormat(8000, 1);
@@ -101,6 +117,19 @@ namespace Packet.PacketConsole
                 UriBuilder uri = new UriBuilder(codeBase);
                 string path = Uri.UnescapeDataString(uri.Path);
                 return Path.GetDirectoryName(path);
+            }
+        }
+
+        static Dictionary<uint,byte[]> GetWorkingAudio()
+        {
+            string filename = AssemblyDirectory + @"\..\..\..\Sample\testing123.bin";
+
+            using (FileStream stream = File.OpenRead(filename))
+            {
+                var formatter = new BinaryFormatter();
+                var v = (Dictionary<uint, byte[]>)formatter.Deserialize(stream);
+                stream.Close();
+                return v;
             }
         }
 

@@ -19,7 +19,7 @@ namespace Packet.Core
 
         private Stopwatch _stopwatch = new Stopwatch();
 
-        public void Send(int channelNumber, string callerId, Dictionary<uint, byte[]> audioData)
+        public void Send(int channelNumber, string callerId, Dictionary<uint, byte[]> audioData, TimestampType tt)
         {
             string mac = GetMacAddress();
 
@@ -35,7 +35,7 @@ namespace Packet.Core
                 for (int i = 0; i < 31; i++)
                 {
                     //Console.WriteLine("Alert");
-                    byte[] packetData = alertPacket.ToPacket();
+                    byte[] packetData = alertPacket.ToPacket(tt);
 
                     if (i > 0) WaitFor(30);
 
@@ -70,7 +70,7 @@ namespace Packet.Core
                 audioPacket.PreviousAudioData = previousAudioData;
 
                 //Console.WriteLine("Transmit");
-                byte[] packetData = audioPacket.ToPacket();
+                byte[] packetData = audioPacket.ToPacket(tt);
 
                 WaitFor(20);
 
@@ -90,7 +90,7 @@ namespace Packet.Core
                 for (int i = 0; i < 12; i++)
                 {
                     //Console.WriteLine("EndOfTransmit");
-                    byte[] packetData = endPacket.ToPacket();
+                    byte[] packetData = endPacket.ToPacket(tt);
 
                     if (i > 0) WaitFor(30);
 
