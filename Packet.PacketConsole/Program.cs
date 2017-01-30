@@ -1,4 +1,5 @@
-﻿using NAudio.Wave;
+﻿using NAudio.Codecs;
+using NAudio.Wave;
 using Packet.Core;
 using System;
 using System.Collections.Generic;
@@ -16,24 +17,100 @@ namespace Packet.PacketConsole
 {
 	class Program
 	{
-        static void Main(string[] args)
+		static void Main(string[] args)
 		{
+            //TestSpeech();
+
+            TestKnownWorkingAudio();
+
+            //TestMp3();
+
+            //TestWav();
+
+            return;
+
+            //byte[] speechBytes;
+            //using (var synth = new SpeechSynthesizer())
+            //{
+            //    using (var stream = new MemoryStream())
+            //    {
+            //        synth.SetOutputToWaveStream(stream);
+            //        synth.Speak("test text to audio!");
+            //        speechBytes = stream.GetBuffer();
+            //    }
+            //}
+            //Console.WriteLine(speechBytes);
+
+            //var ulawFormat = WaveFormat.CreateMuLawFormat(8000, 1);
+            //using (WaveFileReader reader = new WaveFileReader(AssemblyDirectory + @"\..\..\..\TestAudio\Cymbal.wav"))
+            //{
+            //    Console.WriteLine(reader.WaveFormat.SampleRate);
+
+            //    Console.WriteLine("Encoding: {0}", reader.WaveFormat.Encoding);
+            //    Console.WriteLine("SampleRate: {0}", reader.WaveFormat.SampleRate);
+            //    Console.WriteLine("Channels: {0}", reader.WaveFormat.Channels);
+            //    Console.WriteLine("AverageBytesPerSecond: {0}", reader.WaveFormat.AverageBytesPerSecond);
+
+            //    using (WaveFormatConversionStream ulawStm = new WaveFormatConversionStream(ulawFormat, reader))
+            //    {
+            //        WaveFileWriter.CreateWaveFile(AssemblyDirectory + @"\..\..\..\TestAudio\Cymbal.ulaw.wav", ulawStm);
+            //    }
+
+                    
+            //}
+            //return;
+            //    var pcmFormat = new WaveFormat(8000, 16, 1);
+            
+
+            //Dictionary<uint, byte[]> audioBytes = new Dictionary<uint, byte[]>();
+            //uint index = 1;
+
+            //using (WaveFormatConversionStream pcmStm = new WaveFormatConversionStream(pcmFormat, new WaveFileReader(AssemblyDirectory + @"\..\..\..\TestAudio")))
+            //{
+            //    using (WaveFormatConversionStream ulawStm = new WaveFormatConversionStream(ulawFormat, pcmStm))
+            //    {
+            //        byte[] buffer = new byte[160];
+            //        int bytesRead = ulawStm.Read(buffer, 0, 160);
+
+            //        while (bytesRead > 0)
+            //        {
+            //            byte[] sample = new byte[bytesRead];
+            //            Array.Copy(buffer, sample, bytesRead);
+            //            audioBytes.Add(index, sample);
+            //            index += 1;
+
+            //            bytesRead = ulawStm.Read(buffer, 0, 160);
+            //        }
+            //    }
+            //}
+
+            //return;
+
+            
+
+		}
+
+        private static void TestWav()
+        {
             Dictionary<uint, byte[]> audioBytes = new Dictionary<uint, byte[]>();
+            List<byte> justbytes = new List<byte>();
 
             uint timestamp = 1908944;
             Model.TimestampType timestampType = Model.TimestampType.Try2;
 
-            //string filename = Path.Combine(AssemblyDirectory + @"\..\..\..\TestAudio", "VirusAlert.wav");
+            string filename = Path.Combine(AssemblyDirectory + @"\..\..\..\TestAudio", "VirusAlert.wav");
             //string filename = Path.Combine(AssemblyDirectory + @"\..\..\..\TestAudio", "clockchime.ulaw.wav");
             //string filename = Path.Combine(AssemblyDirectory + @"\..\..\..\TestAudio", "lightning_announce.wav");
-            string filename = Path.Combine(AssemblyDirectory + @"\..\..\..\TestAudio", "g711-ulaw-5s.wav");
-            
+            //string filename = Path.Combine(AssemblyDirectory + @"\..\..\..\TestAudio", "g711-ulaw-5s.wav");
+            //string filename = Path.Combine(AssemblyDirectory + @"\..\..\..\TestAudio", "pcm1608m.wav");
+
             using (WaveFileReader reader = new WaveFileReader(filename))
             {
                 Console.WriteLine(reader.WaveFormat.SampleRate);
 
                 Console.WriteLine("Encoding: {0}", reader.WaveFormat.Encoding);
                 Console.WriteLine("SampleRate: {0}", reader.WaveFormat.SampleRate);
+                Console.WriteLine("SampleRate: {0}", reader.WaveFormat.BitsPerSample);
                 Console.WriteLine("Channels: {0}", reader.WaveFormat.Channels);
                 Console.WriteLine("AverageBytesPerSecond: {0}", reader.WaveFormat.AverageBytesPerSecond);
 
@@ -41,34 +118,140 @@ namespace Packet.PacketConsole
 
                 int numberOfChunks = (int)Math.Ceiling((reader.Length + 0.0) / (bytesToRead + 0.0));
 
-                //var timestampList = GetTimestamps();
-                //int timestampListIndex = 0;
-
                 int bytesRead = 0;
                 byte[] readChunk = new byte[bytesToRead];
                 do
                 {
                     bytesRead = reader.Read(readChunk, 0, readChunk.Length);
 
-                    //timestamp = timestampList[timestampListIndex];
-                    
+                    justbytes.AddRange(readChunk);
 
-                    //Process the bytes here
-                    audioBytes.Add(timestamp,  (byte[])readChunk.Clone());
+                    byte[] stuff = (byte[])readChunk.Clone();
+
+                    audioBytes.Add(timestamp, stuff);
                     timestamp += (uint)bytesToRead;
-
-                    //timestampListIndex++;
-                    //if (timestampListIndex >= timestampList.Count) break;
                 }
                 while (bytesRead != 0);
 
             }
 
+
+            // UDP packets are sent here
             PTTSender pttSender = new PTTSender();
-            pttSender.Send(26, "Joe", audioBytes, timestampType);
+            pttSender.Send(26, "Joe", audioBytes, timestampType, Model.Codec.G711U);
+        }
+
+        private static void TestKnownWorkingAudio()
+        {
+            var knownWorkingAudio = GetWorkingAudio();
+
+            Dictionary<uint, byte[]> newAudioBytes = new Dictionary<uint, byte[]>();
+
+            uint newTimestamp = 1;
+
+            foreach (var kwa in knownWorkingAudio)
+            {
+                byte[] stuff = kwa.Value;
+                newAudioBytes.Add(newTimestamp, stuff);
+                newTimestamp += 160;
+            }
+
+            //var ulawFormat = WaveFormat.CreateMuLawFormat(8000, 1);
+            WaveFormat waveFormat = new WaveFormat(8000, 1);
+            using (WaveFileWriter w=new WaveFileWriter(AssemblyDirectory + @"\..\..\..\TestAudio\output.wav", waveFormat))
+            {
+                G722CodecState _state = new G722CodecState(64000, G722Flags.SampleRate8000);
+                G722Codec _codec = new G722Codec();
+
+                
 
 
-		}
+                foreach(var kwa in knownWorkingAudio)
+                {
+                    byte[] data = kwa.Value;
+
+                    short[] buffer = new short[data.Length];
+                    _codec.Decode(_state, buffer, data, data.Length);
+
+                    List<byte> bytes = new List<byte>();
+                    foreach (var s in buffer)
+                    {
+                        bytes.AddRange(BitConverter.GetBytes(s));
+                    }
+
+                    w.Write(bytes.ToArray(), 0, data.Length);
+                }
+                //w.Flush();
+            }
+
+            PTTSender pttSender1 = new PTTSender();
+            pttSender1.Send(26, "Harribag", newAudioBytes, Model.TimestampType.Try2, Model.Codec.G711U);
+        }
+
+        private static void TestMp3()
+        {
+            Dictionary<uint, byte[]> audioBytes = new Dictionary<uint, byte[]>();
+
+            uint timestamp = 0;
+
+
+            string file = @"D:\Development\PolycomPPTSender\TestAudio\Cymbal.wav";
+            var pcmFormat = new WaveFormat(8000, 16, 1);
+            var ulawFormat = WaveFormat.CreateMuLawFormat(8000, 1);
+
+            using (WaveFormatConversionStream pcmStm = new WaveFormatConversionStream(pcmFormat, new WaveFileReader(file)))
+            {
+                using (WaveFormatConversionStream ulawStm = new WaveFormatConversionStream(ulawFormat, pcmStm))
+                {
+                    byte[] buffer = new byte[160];
+                    int bytesRead = ulawStm.Read(buffer, 0, 160);
+
+                    while (bytesRead > 0)
+                    {
+                        byte[] sample = new byte[bytesRead];
+                        Array.Copy(buffer, sample, bytesRead);
+                        //m_rtpChannel.AddSample(sample);
+                        audioBytes.Add(timestamp, sample);
+                        timestamp += 160;
+
+                        bytesRead = ulawStm.Read(buffer, 0, 160);
+                    }
+                }
+            }
+
+            PTTSender pttSender1 = new PTTSender();
+            pttSender1.Send(26, "Harribag", audioBytes, Model.TimestampType.Try2, Model.Codec.G711U);
+        }
+
+        private static void TestSpeech()
+        {
+            Speech s = new Speech();
+            var bytes = s.GenerateToByteArray("Maggie is a huge loon");
+
+            Dictionary<uint, byte[]> speechAudioBytes = new Dictionary<uint, byte[]>();
+
+            uint speechTimestamp = 1908944;
+
+            List<byte> currentList = new List<byte>();
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                currentList.Add(bytes[i]);
+                if (currentList.Count == 160)
+                {
+                    speechAudioBytes.Add(speechTimestamp, currentList.ToArray());
+                    currentList = new List<byte>();
+                    speechTimestamp += 160;
+                }
+            }
+            if (currentList.Count > 0)
+            {
+                speechAudioBytes.Add(speechTimestamp, currentList.ToArray());
+            }
+
+            // UDP packets are sent here
+            PTTSender pttSender2 = new PTTSender();
+            pttSender2.Send(26, "Joe", speechAudioBytes, Model.TimestampType.Try2, Model.Codec.G711U);
+        }
 
         public static string AssemblyDirectory
         {
@@ -83,7 +266,7 @@ namespace Packet.PacketConsole
 
         static Dictionary<uint,byte[]> GetWorkingAudio()
         {
-            string filename = AssemblyDirectory + @"\..\..\..\Sample\testing123.bin";
+            string filename = AssemblyDirectory + @"\..\..\..\Sample\testing123_fixed.bin";
 
             using (FileStream stream = File.OpenRead(filename))
             {

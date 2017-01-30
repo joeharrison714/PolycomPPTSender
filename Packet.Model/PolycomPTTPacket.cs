@@ -142,6 +142,7 @@ namespace Packet.Model
                 }
 
                 //audio
+                if (packet.AudioData != null)
                 alertPacket.AddRange(packet.AudioData);
             }
 
@@ -249,9 +250,35 @@ namespace Packet.Model
                 {
                     bytes.Add(data[i]);
                 }
-                packet.AudioData = bytes.ToArray();
+                byte[] allAudioData = bytes.ToArray();
 
-                packet.AudioDataString = ByteArrayToString(packet.AudioData);
+                if (allAudioData.Length > 160)
+                {
+                    List<byte> first = new List<byte>();
+                    for(int i = 0; i < 160; i++)
+                    {
+                        first.Add(allAudioData[i]);
+                    }
+                    string firstString = ByteArrayToString(first.ToArray());
+                    List<byte> last = new List<byte>();
+                    for (int i = 160; i < allAudioData.Length; i++)
+                    {
+                        last.Add(allAudioData[i]);
+                    }
+                    string lastString = ByteArrayToString(last.ToArray());
+
+                    string allString = ByteArrayToString(allAudioData);
+                    packet.AudioData = last.ToArray();
+                }
+                else
+                {
+                    string allString = ByteArrayToString(allAudioData);
+                    packet.AudioData = (byte[])allAudioData.Clone();
+                }
+
+
+
+                //packet.AudioDataString = ByteArrayToString(packet.AudioData);
             }
 
             return packet;

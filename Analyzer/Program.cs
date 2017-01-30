@@ -70,7 +70,7 @@ namespace Analyzer
             sw.Close();
             sw.Dispose();
 
-            string filename = AssemblyDirectory + @"\..\..\..\Sample\testing123.bin";
+            string filename = AssemblyDirectory + @"\..\..\..\Sample\testing123_Fixed.bin";
             using (FileStream stream = File.Create(filename))
             {
                 var formatter = new BinaryFormatter();

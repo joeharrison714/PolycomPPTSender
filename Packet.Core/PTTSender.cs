@@ -19,7 +19,7 @@ namespace Packet.Core
 
         private Stopwatch _stopwatch = new Stopwatch();
 
-        public void Send(int channelNumber, string callerId, Dictionary<uint, byte[]> audioData, TimestampType tt)
+        public void Send(int channelNumber, string callerId, Dictionary<uint, byte[]> audioData, TimestampType tt, Codec codec)
         {
             string mac = GetMacAddress();
 
@@ -53,7 +53,7 @@ namespace Packet.Core
                 audioPacket.CallerID = callerId;
                 audioPacket.HostSerialNumber = hostSerialNumber;
 
-                audioPacket.Codec = Codec.G711U;
+                audioPacket.Codec = codec;
                 audioPacket.Flags = "FA";
                 audioPacket.SampleCount = audioDataItem.Key;
 
