@@ -119,27 +119,6 @@ namespace Analyzer
             //}
         }
 
-        private static void SendPacket(byte[] packet)
-        {
-            string address = "224.0.1.116";
-            int port = 5001;
-
-            using (Socket mSendSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp))
-            {
-                mSendSocket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership,
-                                            new MulticastOption(IPAddress.Parse(address)));
-                mSendSocket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 255);
-                mSendSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                mSendSocket.Bind(new IPEndPoint(IPAddress.Any, port));
-                IPEndPoint ipep = new IPEndPoint(IPAddress.Parse(address), port);
-                mSendSocket.Connect(ipep);
-
-
-                byte[] bytes = packet;
-                mSendSocket.Send(bytes, bytes.Length, SocketFlags.None);
-            }
-        }
-
         private static void Device_OnPacketArrival(object sender, SharpPcap.CaptureEventArgs e)
         {
             var packetData = e.Packet.Data;

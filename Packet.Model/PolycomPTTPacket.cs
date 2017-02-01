@@ -98,8 +98,8 @@ namespace Packet.Model
 
             if (packet.OpCode == OpCode.Transmit)
             {
-                // null
-                alertPacket.Add(9); // 09
+                //NO!
+                //alertPacket.Add(9); // 09
 
                 // codec
                 if (packet.Codec == Codec.G711U)
@@ -123,16 +123,16 @@ namespace Packet.Model
                 byte[] sampleBytes = BitConverter.GetBytes(packet.SampleCount);
                 Array.Reverse(sampleBytes);
 
-                if (tt == TimestampType.Try1)
+                //if (tt == TimestampType.Try1)
                 {
                     alertPacket.AddRange(sampleBytes);
                 }
-                else if (tt == TimestampType.Try2)
+                //else if (tt == TimestampType.Try2)
                 {
-                    alertPacket.Add(sampleBytes[1]);
-                    alertPacket.Add(sampleBytes[2]);
-                    alertPacket.Add(sampleBytes[3]);
-                    alertPacket.Add(0);
+                    //alertPacket.Add(sampleBytes[1]);
+                    //alertPacket.Add(sampleBytes[2]);
+                    //alertPacket.Add(sampleBytes[3]);
+                    //alertPacket.Add(0);
                 }
 
                 //redundant audio
@@ -197,13 +197,13 @@ namespace Packet.Model
             {
                 currentOffset += 1;
 
-                byte nullChar = data[currentOffset];
+                //byte nullChar = data[currentOffset];
 
-                if (nullChar != 9)
-                {
-                    Console.WriteLine("wtf!");
-                }
-                currentOffset += 1;
+                //if (nullChar != 9)
+                //{
+                //    Console.WriteLine("wtf!");
+                //}
+                //currentOffset += 1;
 
                 byte codec = data[currentOffset];
                 if (codec == 0x00)
@@ -255,7 +255,7 @@ namespace Packet.Model
                 if (allAudioData.Length > 160)
                 {
                     List<byte> first = new List<byte>();
-                    for(int i = 0; i < 160; i++)
+                    for (int i = 0; i < 160; i++)
                     {
                         first.Add(allAudioData[i]);
                     }
@@ -278,7 +278,7 @@ namespace Packet.Model
 
 
 
-                //packet.AudioDataString = ByteArrayToString(packet.AudioData);
+                packet.AudioDataString = ByteArrayToString(packet.AudioData);
             }
 
             return packet;

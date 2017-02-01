@@ -54,19 +54,10 @@ namespace Packet.Core
                 audioPacket.HostSerialNumber = hostSerialNumber;
 
                 audioPacket.Codec = codec;
-                audioPacket.Flags = "FA";
+                audioPacket.Flags = "00";
                 audioPacket.SampleCount = audioDataItem.Key;
 
-                //audioPacket.AudioData = audioDataItem.Value;
-                byte[] nextPreviousAudioData = (byte[])audioDataItem.Value.Clone();
-
-                audioPacket.AudioData = new byte[audioDataItem.Value.Length - 1];
-                for(int i = 0; i < audioDataItem.Value.Length - 1; i++)
-                {
-                    audioPacket.AudioData[i] = audioDataItem.Value[i];
-                }
-
-
+                audioPacket.AudioData = (byte[])audioDataItem.Value.Clone();
                 audioPacket.PreviousAudioData = previousAudioData;
 
                 //Console.WriteLine("Transmit");
@@ -75,7 +66,7 @@ namespace Packet.Core
                 WaitFor(20);
 
                 SendPacket(packetData);
-                previousAudioData = (byte[])nextPreviousAudioData.Clone();
+                previousAudioData = (byte[])audioPacket.AudioData.Clone();
             }
 
             WaitFor(50);

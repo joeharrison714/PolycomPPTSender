@@ -19,9 +19,9 @@ namespace Packet.PacketConsole
 	{
 		static void Main(string[] args)
 		{
-            //TestSpeech();
+            TestSpeech();
 
-            TestKnownWorkingAudio();
+            //TestKnownWorkingAudio();
 
             //TestMp3();
 
@@ -98,10 +98,10 @@ namespace Packet.PacketConsole
             uint timestamp = 1908944;
             Model.TimestampType timestampType = Model.TimestampType.Try2;
 
-            string filename = Path.Combine(AssemblyDirectory + @"\..\..\..\TestAudio", "VirusAlert.wav");
+            //string filename = Path.Combine(AssemblyDirectory + @"\..\..\..\TestAudio", "VirusAlert.wav");
             //string filename = Path.Combine(AssemblyDirectory + @"\..\..\..\TestAudio", "clockchime.ulaw.wav");
             //string filename = Path.Combine(AssemblyDirectory + @"\..\..\..\TestAudio", "lightning_announce.wav");
-            //string filename = Path.Combine(AssemblyDirectory + @"\..\..\..\TestAudio", "g711-ulaw-5s.wav");
+            string filename = Path.Combine(AssemblyDirectory + @"\..\..\..\TestAudio", "g711-ulaw-5s.wav");
             //string filename = Path.Combine(AssemblyDirectory + @"\..\..\..\TestAudio", "pcm1608m.wav");
 
             using (WaveFileReader reader = new WaveFileReader(filename))
@@ -226,7 +226,7 @@ namespace Packet.PacketConsole
         private static void TestSpeech()
         {
             Speech s = new Speech();
-            var bytes = s.GenerateToByteArray("Maggie is a huge loon");
+            var bytes = s.GenerateToByteArray("It's working! It's working! It's working! ");
 
             Dictionary<uint, byte[]> speechAudioBytes = new Dictionary<uint, byte[]>();
 
